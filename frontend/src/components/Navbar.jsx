@@ -11,8 +11,15 @@ const Navbar = () => {
   };
 
   return (
-    <nav className="bg-blue-600 text-white p-4 flex justify-between items-center">
-      <Link to="/" className="text-2xl font-bold">Your apps name</Link>
+    <nav className="p-4 flex justify-between items-center bg-white/80">
+      <Link to="/" className={`${user ? "hidden lg:block" : ""}`}><img src="/logo.png" alt="Logo" style={{ maxWidth: "80%" }} /></Link>
+      {user ? (<button
+        // onClick={onToggleSidebar}
+        className="lg:hidden text-xl"
+        aria-label="Toggle Sidebar"
+      >
+        <i className="fas fa-bars"></i>
+      </button>) : null}
       <div>
         {user ? (
           <>
@@ -27,10 +34,10 @@ const Navbar = () => {
           </>
         ) : (
           <>
-            <Link to="/login" className="mr-4">Login</Link>
+            <Link to="/login" className="mr-8">Login</Link>
             <Link
               to="/register"
-              className="bg-green-500 px-4 py-2 rounded hover:bg-green-700"
+              className="bg-gradient-to-r from-blue-400 to-purple-500 text-white px-4 py-2 rounded hover:bg-green-700"
             >
               Register
             </Link>
