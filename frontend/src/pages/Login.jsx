@@ -37,9 +37,15 @@ const Login = () => {
           onChange={(e) => setFormData({ ...formData, password: e.target.value })}
           className="w-full mb-4 p-2 border rounded"
         />
-        <button type="submit" className="w-full bg-blue-600 text-white p-2 rounded">
+          <button type="submit" className="w-full py-2 bg-gradient-to-r from-blue-400 to-purple-500 text-white font-semibold rounded">
           Login
         </button>
+        <p className="mt-4 text-center">
+          Don't have an account?{' '}
+          <a href="/register" className="text-blue-600">
+            Register
+          </a>
+        </p>
       </form>
     </div>
   );
