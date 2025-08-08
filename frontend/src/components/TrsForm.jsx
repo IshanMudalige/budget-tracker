@@ -1,0 +1,151 @@
+import { useState, useEffect } from 'react';
+import { useAuth } from '../context/AuthContext';
+import axiosInstance from '../axiosConfig';
+
+const TrsForm = ({ selectedTransaction, onSuccess }) => {
+    const { user } = useAuth();
+
+    const [activeTab, setActiveTab] = useState("income");
+    const [amount, setAmount] = useState("");
+    const [note, setNote] = useState("");
+    const [date, setDate] = useState("");
+    const [category, setCategory] = useState("");
+    const [categories, setCategories] = useState([]);
+
+    // load categories
+    useEffect(() => {
+        const fetchCategories = async () => {
+            try {
+                const res = await axiosInstance.get("/api/categories");
+                setCategories(res.data);
+            } catch (error) {
+                console.error("Error loading categories:", error);
+            }
+        };
+        fetchCategories();
+    }, []);
+
+    // set data for edit
+    useEffect(() => {
+        if (selectedTransaction) {
+            setActiveTab(selectedTransaction.type);
+            setAmount(selectedTransaction.amount);
+            setNote(selectedTransaction.note || "");
+            setDate(selectedTransaction.date?.split('T')[0] || "");
+            setCategory(selectedTransaction.category?._id || "");
+        } else {
+            setAmount("");
+            setNote("");
+            setDate("");
+            setCategory("");
+            setActiveTab("income");
+        }
+    }, [selectedTransaction]);
+
+    const resetForm = () => {
+        setActiveTab("income");
+        setDate("");
+        setCategory("");
+        setNote("");
+        setAmount("");
+    };
+
+    const handleSubmit = async (e) => {
+        e.preventDefault();
+
+        const transactionData = {
+            type: activeTab,
+            amount,
+            note,
+            date,
+            category,
+        };
+
+        try {
+            if (selectedTransaction) {
+                await axiosInstance.put(`/api/transactions/${selectedTransaction._id}`, transactionData, {
+                    headers: { Authorization: `Bearer ${user.token}` },
+                });
+            } else {
+                await axiosInstance.post("/api/transactions", transactionData, { headers: { Authorization: `Bearer ${user.token}` }, });
+            }
+
+            onSuccess();
+            resetForm();
+            alert('sucess.');
+        } catch (error) {
+            console.error("Failed to save transaction:", error);
+            alert('Failed to save task.');
+        }
+    };
+
+    return (
+        <form onSubmit={handleSubmit} className="bg-white w-full lg:w-1/2 p-6 rounded-xl shadow">
+            <h2 className="text-xl font-semibold mb-6">
+                {selectedTransaction ? "Update Transaction" : "Add Transaction"}
+            </h2>
+
+            <div className="flex mb-6">
+                <button
+                    type="button"
+                    className={`flex-1 py-2 rounded-l-lg border ${activeTab === "income" ? "bg-green-400 text-white" : "bg-gray-100"}`}
+                    onClick={() => setActiveTab("income")}
+                >
+                    Income
+                </button>
+                <button
+                    type="button"
+                    className={`flex-1 py-2 rounded-r-lg border ${activeTab === "expense" ? "bg-red-400 text-white" : "bg-gray-100"}`}
+                    onClick={() => setActiveTab("expense")}
+                >
+                    Expense
+                </button>
+            </div>
+
+            <input
+                type="date"
+                value={date}
+                onChange={(e) => setDate(e.target.value)}
+                className="w-full mb-4 px-4 py-2 border rounded-lg"
+                required
+            />
+
+            <select
+                value={category}
+                onChange={(e) => setCategory(e.target.value)}
+                className="w-full mb-4 px-4 py-2 border rounded-lg"
+                required
+            >
+                <option value="">Select Category</option>
+                {categories.map(cat => (
+                    <option key={cat._id} value={cat._id}>
+                        {cat.name}
+                    </option>
+                ))}
+            </select>
+
+            <textarea
+                value={note}
+                onChange={(e) => setNote(e.target.value)}
+                placeholder="Note"
+                className="w-full mb-4 px-4 py-2 border rounded-lg resize-none"
+                rows="2"
+            />
+
+            <input
+                type="number"
+                value={amount}
+                onChange={(e) => setAmount(e.target.value)}
+                placeholder="Amount"
+                className="w-full mb-6 px-4 py-2 border rounded-lg"
+                required
+            />
+
+            <button className="bg-gradient-to-r from-blue-400 to-purple-500 text-white px-6 py-2 rounded-lg w-full font-semibold">
+                {selectedTransaction ? "UPDATE" : "ADD"}
+            </button>
+        </form>
+    );
+};
+
+export default TrsForm;
