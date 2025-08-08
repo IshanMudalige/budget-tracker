@@ -23,13 +23,14 @@ const getTransactions = async (req, res) => {
 
 const createTransaction = async (req, res) => {
   try {
-    const { amount, type, category, date } = req.body;
+    const { amount, type, category, date, note } = req.body;
 
     const newTransaction = new Transaction({
       amount,
       type,
       category,
       date,
+      note,
       user: req.user._id,
     });
 
@@ -42,7 +43,7 @@ const createTransaction = async (req, res) => {
 
 const updateTransaction = async (req, res) => {
   try {
-    const { amount, type, category, date } = req.body;
+    const { amount, type, category, date, note } = req.body;
     const transaction = await Transaction.findById(req.params.id);
     if (!transaction) {
       return res.status(404).json({ error: 'Transaction not found' });
@@ -51,6 +52,7 @@ const updateTransaction = async (req, res) => {
     transaction.type = type;
     transaction.category = category;
     transaction.date = date;
+    transaction.note = note;
     const updated = await transaction.save();
     res.json(updated);
   } catch (err) {
