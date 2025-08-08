@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
 import axiosInstance from '../axiosConfig';
 
-const TrsForm = ({ selectedTransaction, onSuccess }) => {
+const TrsForm = ({ selectedTransaction, setSelectedTx, refreshTransactions }) => {
     const { user } = useAuth();
 
     const [activeTab, setActiveTab] = useState("income");
@@ -48,6 +48,7 @@ const TrsForm = ({ selectedTransaction, onSuccess }) => {
         setCategory("");
         setNote("");
         setAmount("");
+        setSelectedTx(null);
     };
 
     const handleSubmit = async (e) => {
@@ -70,12 +71,26 @@ const TrsForm = ({ selectedTransaction, onSuccess }) => {
                 await axiosInstance.post("/api/transactions", transactionData, { headers: { Authorization: `Bearer ${user.token}` }, });
             }
 
-            onSuccess();
+            refreshTransactions();
             resetForm();
             alert('sucess.');
         } catch (error) {
             console.error("Failed to save transaction:", error);
             alert('Failed to save task.');
+        }
+    };
+
+    const handleDelete = async (transactionId) => {
+        try {
+            await axiosInstance.delete(`/api/transactions/${transactionId}`, {
+                headers: { Authorization: `Bearer ${user.token}` },
+            });
+            refreshTransactions();
+            resetForm();
+            alert('sucess.');
+        } catch (error) {
+            console.error("Failed to delete transaction:", error);
+            alert('Failed to delete task.');
         }
     };
 
@@ -88,14 +103,14 @@ const TrsForm = ({ selectedTransaction, onSuccess }) => {
             <div className="flex mb-6">
                 <button
                     type="button"
-                    className={`flex-1 py-2 rounded-l-lg border ${activeTab === "income" ? "bg-green-400 text-white" : "bg-gray-100"}`}
+                    className={`flex-1 py-2 rounded-l-lg border ${activeTab === "income" ? "bg-income text-white" : "bg-gray-100"}`}
                     onClick={() => setActiveTab("income")}
                 >
                     Income
                 </button>
                 <button
                     type="button"
-                    className={`flex-1 py-2 rounded-r-lg border ${activeTab === "expense" ? "bg-red-400 text-white" : "bg-gray-100"}`}
+                    className={`flex-1 py-2 rounded-r-lg border ${activeTab === "expense" ? "bg-expense text-white" : "bg-gray-100"}`}
                     onClick={() => setActiveTab("expense")}
                 >
                     Expense
@@ -130,6 +145,7 @@ const TrsForm = ({ selectedTransaction, onSuccess }) => {
                 placeholder="Note"
                 className="w-full mb-4 px-4 py-2 border rounded-lg resize-none"
                 rows="2"
+                required
             />
 
             <input
@@ -140,10 +156,32 @@ const TrsForm = ({ selectedTransaction, onSuccess }) => {
                 className="w-full mb-6 px-4 py-2 border rounded-lg"
                 required
             />
-
-            <button className="bg-gradient-to-r from-blue-400 to-purple-500 text-white px-6 py-2 rounded-lg w-full font-semibold">
+            <div className={selectedTransaction ? "flex justify-between gap-2" : ''}>
+                {selectedTransaction && (
+                <button
+                    type="button"
+                    className="border border-grey-500 text-grey-500 bg-white py-2 rounded-lg w-full font-semibold hover:bg-grey-50"
+                    onClick={resetForm}
+                >
+                    Clear
+                </button>
+                
+            )}  
+             {selectedTransaction && (
+                <button
+                    type="button"
+                    className="border border-red-500 text-red-500 bg-white py-2 rounded-lg w-full font-semibold hover:bg-red-50"
+                    onClick={() => handleDelete(selectedTransaction._id)}
+                >
+                    Delete
+                </button>
+            )}
+            <button className="bg-gradient-to-r from-blue-400 to-purple-500 text-white py-2 rounded-lg w-full font-semibold">
                 {selectedTransaction ? "UPDATE" : "ADD"}
             </button>
+           
+            
+            </div> 
         </form>
     );
 };
