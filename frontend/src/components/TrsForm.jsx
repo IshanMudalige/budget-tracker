@@ -12,7 +12,7 @@ const TrsForm = ({ selectedTransaction, onSuccess }) => {
     const [category, setCategory] = useState("");
     const [categories, setCategories] = useState([]);
 
-    // Load categories
+    // load categories
     useEffect(() => {
         const fetchCategories = async () => {
             try {
@@ -25,7 +25,7 @@ const TrsForm = ({ selectedTransaction, onSuccess }) => {
         fetchCategories();
     }, []);
 
-    // Populate fields when editing
+    // set data for edit
     useEffect(() => {
         if (selectedTransaction) {
             setActiveTab(selectedTransaction.type);
@@ -63,16 +63,14 @@ const TrsForm = ({ selectedTransaction, onSuccess }) => {
 
         try {
             if (selectedTransaction) {
-                // Update
                 await axiosInstance.put(`/api/transactions/${selectedTransaction._id}`, transactionData, {
                     headers: { Authorization: `Bearer ${user.token}` },
                 });
             } else {
-                // Add
-                await axiosInstance.post("/api/transactions", transactionData, {headers: { Authorization: `Bearer ${user.token}` },});
+                await axiosInstance.post("/api/transactions", transactionData, { headers: { Authorization: `Bearer ${user.token}` }, });
             }
 
-            onSuccess(); // Trigger parent refresh or clear selection
+            onSuccess();
             resetForm();
             alert('sucess.');
         } catch (error) {
@@ -82,7 +80,7 @@ const TrsForm = ({ selectedTransaction, onSuccess }) => {
     };
 
     return (
-        <form onSubmit={handleSubmit} className="bg-white w-full lg:w-2/5 p-6 rounded-xl shadow">
+        <form onSubmit={handleSubmit} className="bg-white w-full lg:w-1/2 p-6 rounded-xl shadow">
             <h2 className="text-xl font-semibold mb-6">
                 {selectedTransaction ? "Update Transaction" : "Add Transaction"}
             </h2>
