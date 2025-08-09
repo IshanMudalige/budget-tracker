@@ -1,8 +1,18 @@
 import React, { useRef } from "react";
 
 const months = [
-  "Jan", "Feb", "Mar", "Apr", "May", "Jun",
-  "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"
+  { label: "Jan", value: 1 },
+  { label: "Feb", value: 2 },
+  { label: "Mar", value: 3 },
+  { label: "Apr", value: 4 },
+  { label: "May", value: 5 },
+  { label: "Jun", value: 6 },
+  { label: "Jul", value: 7 },
+  { label: "Aug", value: 8 },
+  { label: "Sep", value: 9 },
+  { label: "Oct", value: 10 },
+  { label: "Nov", value: 11 },
+  { label: "Dec", value: 12 },
 ];
 
 const MonthSelector = ({ selectedMonth, setSelectedMonth }) => {
@@ -20,7 +30,7 @@ const MonthSelector = ({ selectedMonth, setSelectedMonth }) => {
     <div className="relative w-full flex items-center">
       <button
         onClick={scrollLeft}
-        className="z-10 bg-white shadow rounded-full p-1"
+        className="z-10 bg-white shadow rounded-full px-3 py-1"
       >
         <i className="fas fa-chevron-left"></i>
       </button>
@@ -31,21 +41,21 @@ const MonthSelector = ({ selectedMonth, setSelectedMonth }) => {
         <div className="inline-flex gap-2">
           {months.map((month) => (
             <button
-              key={month}
+              key={month.value}
               onClick={() => setSelectedMonth(month)}
-              className={`px-4 py-1 rounded-full whitespace-nowrap ${month === selectedMonth
+              className={`px-4 py-1 rounded-lg whitespace-nowrap ${selectedMonth?.value === month.value
                   ? "bg-purple-500 text-white font-semibold shadow"
                   : "bg-gray-100 text-gray-600"
                 }`}
             >
-              {month}
+              {month.label}
             </button>
           ))}
         </div>
       </div>
       <button
         onClick={scrollRight}
-        className="z-10 bg-white shadow rounded-full p-1"
+        className="z-10 bg-white shadow rounded-full px-3 py-1"
       >
         <i className="fas fa-chevron-right"></i>
       </button>

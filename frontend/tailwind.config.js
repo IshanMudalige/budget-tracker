@@ -8,6 +8,8 @@ module.exports = {
       colors: {
         primary: '#E5F3FA',      // custom blue
         secondary: '#D3D3FF',    // custom pink
+        income: '#89dd8bff',
+        expense: '#f79494ff',
       },
     },
   },
