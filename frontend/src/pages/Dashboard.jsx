@@ -3,6 +3,7 @@ import TrsList from "../components/TrsList";
 import { useAuth } from '../context/AuthContext';
 import axiosInstance from '../axiosConfig';
 import { useEffect } from 'react';
+import PieChartComponent from '../components/PieChartComponent';
 
 const Dashboard = () => {
     const [selectedMonth] = useState(() => {
@@ -15,9 +16,11 @@ const Dashboard = () => {
     const [transactions, setTransactions] = useState([]);
     const { user } = useAuth();
 
+    const currentMonthName = new Date().toLocaleString("en-US", { month: "long" });
+
     const fetchTransactions = async () => {
         const month = selectedMonth.value;
-        const year = 2025 //selectedMonth.getFullYear();
+        const year = 2025
 
         try {
             const res = await axiosInstance.get(`/api/transactions`, {
@@ -34,7 +37,7 @@ const Dashboard = () => {
         fetchTransactions();
     }, [user, selectedMonth]);
 
-    // 🔹 Calculate Summary values
+    // cal summary
     const totalIncome = transactions
         .filter(tx => tx.type === "income")
         .reduce((sum, tx) => sum + tx.amount, 0);
@@ -45,24 +48,39 @@ const Dashboard = () => {
 
     const balance = totalIncome - totalExpense;
 
-    // 🔹 Example budget calculation (replace with actual logic)
+    // budget data
     const budget = 2000;
     const remaining = budget - totalExpense;
     const progress = Math.min(((totalExpense / budget) * 100).toFixed(0), 100);
 
+    // recent trans
     const recentTransactions = [...transactions]
-        .sort((a, b) => new Date(b.date) - new Date(a.date)) // sort latest first
-        .slice(0, 3); // take first 3
+        .sort((a, b) => new Date(b.date) - new Date(a.date))
+        .slice(0, 3);
+
+    const chartData = [
+        {
+            name: "Income",
+            value: transactions
+                .filter(trx => trx.type === "income")
+                .reduce((sum, trx) => sum + trx.amount, 0),
+            color: "#89dd8bff"
+        },
+        {
+            name: "Expense",
+            value: transactions
+                .filter(trx => trx.type === "expense")
+                .reduce((sum, trx) => sum + trx.amount, 0),
+            color: "#f79494ff"
+        }
+    ];
 
     return (
         <div>
-            {/* <Topbar onToggleSidebar={onToggleSidebar} /> */}
             <div className="px-6 py-6">
-                {/* <h1 className="text-2xl font-semibold mb-4 text-gray-600">Dashboard</h1> */}
+                <h1 className="text-2xl font-semibold mb-4 text-gray-500">{currentMonthName} Overview</h1>
                 <h3 className="font-semibold mb-3 text-gray-600">Summary</h3>
                 <div className="w-full space-y-6">
-                    {/* Summary Section */}
-
                     <div className="flex flex-col lg:flex-row gap-6">
                         <div className="flex-1 bg-white p-4 rounded-xl shadow flex items-center gap-4">
                             <i class="fas fa-money-bill fa-xl" style={{ color: "#89dd8bff" }} />
@@ -86,8 +104,6 @@ const Dashboard = () => {
                             </div>
                         </div>
                     </div>
-
-                    {/* Budget Goal */}
                     <div>
                         <h3 className="font-semibold mb-2 text-gray-600">Budget Goal</h3>
                         <div className="bg-white p-4 rounded-xl shadow flex items-center gap-4">
@@ -107,25 +123,21 @@ const Dashboard = () => {
 
                         </div>
                     </div>
-
-
-                    {/* Recent Transactions & Progress */}
                     <div className="flex flex-col lg:flex-row gap-6">
-                        {/* Recent Transactions */}
-
                         <div className="flex-1">
                             <div className="flex justify-between items-center mb-3">
                                 <h3 className="font-semibold text-gray-600">Recent Transactions</h3>
-                                <button className="text-blue-500 hover:text-blue-600 mr-2">View All</button>
+                                <button onClick={() => window.location.href = "/income-expense"} className="text-blue-500 hover:text-blue-600 mr-2">View All</button>
                             </div>
                             <TrsList transactions={recentTransactions} />
                         </div>
-
-                        {/* Progress Placeholder */}
                         <div className="w-full lg:w-2/5 mt-6 lg:mt-0">
-                            <h3 className="font-semibold mb-3 text-gray-600" >Progress</h3>
-                            <div className="bg-white h-full rounded-xl shadow p-4 text-gray-400 flex items-center justify-center">
-                                (Chart/Graph Placeholder)
+                            <div className="flex justify-between items-center mb-3">
+                                <h3 className="font-semibold text-gray-600" >Income vs Expense</h3>
+                                <button onClick={() => window.location.href = "/reports"} className="text-blue-500 hover:text-blue-600 mr-2">View All</button>
+                            </div>
+                            <div className="bg-white rounded-xl shadow p-4 text-gray-400 flex items-center justify-center">
+                                <PieChartComponent data={chartData} height={230} width={200} outerRadius={70} innerRadius={30} />
                             </div>
                         </div>
                     </div>

@@ -5,7 +5,7 @@ import axiosInstance from '../axiosConfig';
 const TrsForm = ({ selectedTransaction, setSelectedTx, refreshTransactions }) => {
     const { user } = useAuth();
 
-    const [activeTab, setActiveTab] = useState("income");
+    const [activeTab, setActiveTab] = useState("expense");
     const [amount, setAmount] = useState("");
     const [note, setNote] = useState("");
     const [date, setDate] = useState("");
@@ -38,7 +38,7 @@ const TrsForm = ({ selectedTransaction, setSelectedTx, refreshTransactions }) =>
             setNote("");
             setDate("");
             setCategory("");
-            setActiveTab("income");
+            setActiveTab("expense");
         }
     }, [selectedTransaction]);
 
@@ -101,19 +101,19 @@ const TrsForm = ({ selectedTransaction, setSelectedTx, refreshTransactions }) =>
             </h2>
 
             <div className="flex mb-6">
-                <button
+                 <button
                     type="button"
-                    className={`flex-1 py-2 rounded-l-lg border ${activeTab === "income" ? "bg-income text-white" : "bg-gray-100"}`}
-                    onClick={() => setActiveTab("income")}
-                >
-                    Income
-                </button>
-                <button
-                    type="button"
-                    className={`flex-1 py-2 rounded-r-lg border ${activeTab === "expense" ? "bg-expense text-white" : "bg-gray-100"}`}
+                    className={`flex-1 py-2 rounded-l-lg border ${activeTab === "expense" ? "bg-expense text-white" : "bg-gray-100"}`}
                     onClick={() => setActiveTab("expense")}
                 >
                     Expense
+                </button>
+                <button
+                    type="button"
+                    className={`flex-1 py-2 rounded-r-lg border ${activeTab === "income" ? "bg-income text-white" : "bg-gray-100"}`}
+                    onClick={() => setActiveTab("income")}
+                >
+                    Income
                 </button>
             </div>
 
