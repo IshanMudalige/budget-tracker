@@ -45,7 +45,7 @@ const MonthSelector = ({ selectedMonth, setSelectedMonth }) => {
               onClick={() => setSelectedMonth(month)}
               className={`px-4 py-1 rounded-lg whitespace-nowrap ${selectedMonth?.value === month.value
                   ? "bg-purple-500 text-white font-semibold shadow"
-                  : "bg-gray-100 text-gray-600"
+                  : "bg-gray-200 text-gray-600"
                 }`}
             >
               {month.label}

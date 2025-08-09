@@ -40,6 +40,7 @@ const IncomeExpense = () => {
     return (
         <div>
             <div className="px-6 py-6">
+                <h1 className="text-2xl font-semibold mb-4 text-gray-500">Manage Your Transactions</h1>
                 <div className="flex flex-col lg:flex-row justify-between gap-6">
                     <TrsForm selectedTransaction={selectedTx} setSelectedTx={setSelectedTx} refreshTransactions={fetchTransactions} />
                     <div className="lg:w-1/2 space-y-6">
