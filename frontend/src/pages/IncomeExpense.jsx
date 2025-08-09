@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useCallback, useState } from "react";
 import TrsForm from "../components/TrsForm";
 import TrsList from "../components/TrsList";
 import MonthSelector from "../components/MonthSelector";
@@ -18,7 +18,7 @@ const IncomeExpense = () => {
     const [transactions, setTransactions] = useState([]);
     const { user } = useAuth();
 
-    const fetchTransactions = async () => {
+    const fetchTransactions = useCallback(async () => {
         const month = selectedMonth.value;
         const year = 2025 //selectedMonth.getFullYear();
 
@@ -31,11 +31,11 @@ const IncomeExpense = () => {
         } catch (error) {
             console.error('Error fetching transactions:', error);
         }
-    };
+    }, [selectedMonth.value, user.token]);
 
     useEffect(() => {
         fetchTransactions();
-    }, [user, selectedMonth]);
+    }, [fetchTransactions]);
 
     return (
         <div>

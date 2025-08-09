@@ -2,20 +2,23 @@ import { useState } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
 import axiosInstance from '../axiosConfig';
+import Alert from "../components/Alert";
 
 const Login = () => {
   const [formData, setFormData] = useState({ email: '', password: '' });
   const { login } = useAuth();
   const navigate = useNavigate();
+  const[alert, setAlert] = useState({ type: "", message: "" });
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
       const response = await axiosInstance.post('/api/auth/login', formData);
       login(response.data);
-      navigate('/tasks');
+      navigate('/dashboard');
     } catch (error) {
-      alert('Login failed. Please try again.');
+      setAlert({ type: "error", message: "Login failed. Please check your credentials." });
+      console.error("Login error:", error);
     }
   };
 
@@ -23,6 +26,14 @@ const Login = () => {
     <div className="max-w-md mx-auto mt-20">
       <form onSubmit={handleSubmit} className="bg-white p-6 shadow-md rounded">
         <h1 className="text-2xl font-bold mb-4 text-center">Login</h1>
+        {alert.message && (
+          <Alert
+            type={alert.type}
+            message={alert.message}
+            onClose={() => setAlert({ type: "", message: "" })}
+            duration={3000} // Auto-hide after 3 seconds
+          />
+        )}
         <input
           type="email"
           placeholder="Email"
@@ -37,7 +48,7 @@ const Login = () => {
           onChange={(e) => setFormData({ ...formData, password: e.target.value })}
           className="w-full mb-4 p-2 border rounded"
         />
-          <button type="submit" className="w-full py-2 bg-gradient-to-r from-blue-400 to-purple-500 text-white font-semibold rounded">
+        <button type="submit" className="w-full py-2 bg-gradient-to-r from-blue-400 to-purple-500 text-white font-semibold rounded">
           Login
         </button>
         <p className="mt-4 text-center">
