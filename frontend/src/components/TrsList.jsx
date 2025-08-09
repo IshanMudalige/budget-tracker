@@ -13,7 +13,7 @@ const TrsList = ({ transactions, setSelectedTx, selectedTx }) => {
                 const color = type === 'income' ? "#89dd8bff" : "#f79494ff";
 
                 return (
-                    <div key={_id} onClick={() => setSelectedTx(tx)} className={`flex justify-between items-center p-4 bg-white rounded-xl shadow border-l-8 ${selectedTx?._id === _id ? 'bg-purple-500/15' : 'bg-white'}`} style={{ borderColor: color, cursor: 'pointer' }}>
+                    <div key={_id} onClick={() => setSelectedTx(tx)} className={`flex justify-between items-center p-4 bg-white rounded-xl shadow  ${selectedTx?._id === _id ? 'border-purple-500 border-2 border-l-8' : 'border-l-8'}`} style={{ cursor: 'pointer', borderColor: selectedTx?._id === _id ? '#A855F7' : color }}>
                         <div className="flex items-center gap-4">
                             <div className="text-2xl">
                                 <i className={`fas ${category.icon}`} style={{ color: category.color }}></i>
