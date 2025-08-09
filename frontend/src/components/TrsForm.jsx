@@ -1,16 +1,18 @@
 import { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
 import axiosInstance from '../axiosConfig';
+import Alert from "./Alert";
 
 const TrsForm = ({ selectedTransaction, setSelectedTx, refreshTransactions }) => {
     const { user } = useAuth();
 
-    const [activeTab, setActiveTab] = useState("income");
+    const [activeTab, setActiveTab] = useState("expense");
     const [amount, setAmount] = useState("");
     const [note, setNote] = useState("");
     const [date, setDate] = useState("");
     const [category, setCategory] = useState("");
     const [categories, setCategories] = useState([]);
+    const [alert, setAlert] = useState({ type: "", message: "" });
 
     // load categories
     useEffect(() => {
@@ -38,7 +40,7 @@ const TrsForm = ({ selectedTransaction, setSelectedTx, refreshTransactions }) =>
             setNote("");
             setDate("");
             setCategory("");
-            setActiveTab("income");
+            setActiveTab("expense");
         }
     }, [selectedTransaction]);
 
@@ -70,13 +72,13 @@ const TrsForm = ({ selectedTransaction, setSelectedTx, refreshTransactions }) =>
             } else {
                 await axiosInstance.post("/api/transactions", transactionData, { headers: { Authorization: `Bearer ${user.token}` }, });
             }
-
+            setAlert({ type: "success", message: selectedTransaction ? "Updated successfully!" : "Added successfully!" });
             refreshTransactions();
             resetForm();
-            alert('sucess.');
+
         } catch (error) {
             console.error("Failed to save transaction:", error);
-            alert('Failed to save task.');
+            setAlert({ type: "error", message: "Failed to save transaction." });
         }
     };
 
@@ -87,10 +89,10 @@ const TrsForm = ({ selectedTransaction, setSelectedTx, refreshTransactions }) =>
             });
             refreshTransactions();
             resetForm();
-            alert('sucess.');
+            setAlert({ type: "success", message: "Transaction deleted successfully!" });
         } catch (error) {
             console.error("Failed to delete transaction:", error);
-            alert('Failed to delete task.');
+            setAlert({ type: "error", message: "Failed to delete transaction." });
         }
     };
 
@@ -99,21 +101,28 @@ const TrsForm = ({ selectedTransaction, setSelectedTx, refreshTransactions }) =>
             <h2 className="text-xl font-semibold mb-6">
                 {selectedTransaction ? "Update Transaction" : "Add Transaction"}
             </h2>
-
+            {alert.message && (
+                <Alert
+                    type={alert.type}
+                    message={alert.message}
+                    onClose={() => setAlert({ type: "", message: "" })}
+                    duration={3000} // Auto-hide after 3 seconds
+                />
+            )}
             <div className="flex mb-6">
                 <button
                     type="button"
-                    className={`flex-1 py-2 rounded-l-lg border ${activeTab === "income" ? "bg-income text-white" : "bg-gray-100"}`}
-                    onClick={() => setActiveTab("income")}
-                >
-                    Income
-                </button>
-                <button
-                    type="button"
-                    className={`flex-1 py-2 rounded-r-lg border ${activeTab === "expense" ? "bg-expense text-white" : "bg-gray-100"}`}
+                    className={`flex-1 py-2 rounded-l-lg border ${activeTab === "expense" ? "bg-expense text-white" : "bg-gray-100"}`}
                     onClick={() => setActiveTab("expense")}
                 >
                     Expense
+                </button>
+                <button
+                    type="button"
+                    className={`flex-1 py-2 rounded-r-lg border ${activeTab === "income" ? "bg-income text-white" : "bg-gray-100"}`}
+                    onClick={() => setActiveTab("income")}
+                >
+                    Income
                 </button>
             </div>
 
@@ -132,7 +141,7 @@ const TrsForm = ({ selectedTransaction, setSelectedTx, refreshTransactions }) =>
                 required
             >
                 <option value="">Select Category</option>
-                {categories.map(cat => (
+                {categories.filter(cat => cat.type === activeTab).map(cat => (
                     <option key={cat._id} value={cat._id}>
                         {cat.name}
                     </option>
@@ -158,30 +167,30 @@ const TrsForm = ({ selectedTransaction, setSelectedTx, refreshTransactions }) =>
             />
             <div className={selectedTransaction ? "flex justify-between gap-2" : ''}>
                 {selectedTransaction && (
-                <button
-                    type="button"
-                    className="border border-grey-500 text-grey-500 bg-white py-2 rounded-lg w-full font-semibold hover:bg-grey-50"
-                    onClick={resetForm}
-                >
-                    Clear
+                    <button
+                        type="button"
+                        className="border border-grey-500 text-grey-500 bg-white py-2 rounded-lg w-full font-semibold hover:bg-grey-50"
+                        onClick={resetForm}
+                    >
+                        Clear
+                    </button>
+
+                )}
+                {selectedTransaction && (
+                    <button
+                        type="button"
+                        className="border border-red-500 text-red-500 bg-white py-2 rounded-lg w-full font-semibold hover:bg-red-50"
+                        onClick={() => handleDelete(selectedTransaction._id)}
+                    >
+                        Delete
+                    </button>
+                )}
+                <button className="bg-gradient-to-r from-blue-400 to-purple-500 text-white py-2 rounded-lg w-full font-semibold">
+                    {selectedTransaction ? "UPDATE" : "ADD"}
                 </button>
-                
-            )}  
-             {selectedTransaction && (
-                <button
-                    type="button"
-                    className="border border-red-500 text-red-500 bg-white py-2 rounded-lg w-full font-semibold hover:bg-red-50"
-                    onClick={() => handleDelete(selectedTransaction._id)}
-                >
-                    Delete
-                </button>
-            )}
-            <button className="bg-gradient-to-r from-blue-400 to-purple-500 text-white py-2 rounded-lg w-full font-semibold">
-                {selectedTransaction ? "UPDATE" : "ADD"}
-            </button>
-           
-            
-            </div> 
+
+
+            </div>
         </form>
     );
 };

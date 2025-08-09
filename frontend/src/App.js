@@ -7,6 +7,7 @@ import Sidebar from './components/Sidebar';
 import IncomeExpense from './pages/IncomeExpense';
 import LandingPage from './pages/LandingPage';
 import Dashboard from './pages/Dashboard';
+import Reports from './pages/Reports';
 
 function App() {
   return (
@@ -27,6 +28,7 @@ function App() {
           >
             <Route path="/income-expense" element={<IncomeExpense />} />
             <Route path="/dashboard" element={<Dashboard />} />
+            <Route path="/reports" element={<Reports />} />
           </Route>
         </Routes>
       </Router>
