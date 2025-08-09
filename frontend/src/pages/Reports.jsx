@@ -1,6 +1,6 @@
 
 import PieChartComponent from '../components/PieChartComponent';
-import { useState } from "react";
+import { useState, useCallback } from "react";
 import TrsList from "../components/TrsList";
 import { useAuth } from '../context/AuthContext';
 import axiosInstance from '../axiosConfig';
@@ -19,7 +19,7 @@ const Reports = () => {
     const [transactions, setTransactions] = useState([]);
     const { user } = useAuth();
 
-    const fetchTransactions = async () => {
+    const fetchTransactions = useCallback( async () => {
         const month = selectedMonth.value;
         const year = 2025 //selectedMonth.getFullYear();
 
@@ -32,11 +32,11 @@ const Reports = () => {
         } catch (error) {
             console.error('Error fetching transactions:', error);
         }
-    };
+    }, [selectedMonth.value, user.token]);
 
     useEffect(() => {
         fetchTransactions();
-    }, [user, selectedMonth]);
+    }, [fetchTransactions]);
 
 
     const chartData = Object.values(
@@ -90,7 +90,13 @@ const Reports = () => {
                                 Income
                             </button>
                         </div>
-                        <PieChartComponent data={chartData} />
+                        {transactions.length === 0 ? (
+                            <div className="text-gray-400 flex items-center justify-center mt-36 mb-36">
+                                <p>No data available!</p>
+                            </div>
+                        ) : (
+                            <PieChartComponent data={chartData} />
+                        ) } 
                     </div>
 
                     <div className="lg:w-1/2 space-y-6">
