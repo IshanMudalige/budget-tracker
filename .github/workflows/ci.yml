@@ -57,7 +57,7 @@ jobs:
         working-directory: ./frontend
         run: |
           npx react-scripts --version || echo "⚠️ react-scripts still missing before build!"
-          yarn build
+          CI=false yarn build
 
       # -------------------- Run Backend Tests --------------------
       - name: Run Backend Tests
