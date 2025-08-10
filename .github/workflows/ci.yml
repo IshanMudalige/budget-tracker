@@ -38,21 +38,41 @@ jobs:
         pm2 list || echo "PM2 not installed yet"
         pm2 delete all || echo "No PM2 processes to delete"
 
-    - name: 📦 Install Backend Dependencies
+    - name: Cache Backend Dependencies
+      uses: actions/cache@v3
+      with:
+        path: backend/node_modules
+        key: backend-${{ hashFiles('backend/yarn.lock') }}
+        restore-keys: |
+          backend-
+
+    - name: Install Backend Dependencies
       working-directory: ./backend
       run: |
         echo "Installing backend dependencies..."
         yarn install --frozen-lockfile
         echo "Backend dependencies installed."
 
-    - name: 📦 Install Frontend Dependencies & Build
+    - name: Cache Frontend Dependencies
+      uses: actions/cache@v3
+      with:
+        path: frontend/node_modules
+        key: frontend-${{ hashFiles('frontend/yarn.lock') }}
+        restore-keys: |
+          frontend-
+
+    - name: Install Frontend Dependencies
       working-directory: ./frontend
-      run: |
+      run: 
         echo "Installing frontend dependencies..."
         yarn install --frozen-lockfile
+
+    - name: Build Frontend
+      working-directory: ./frontend
+      timeout-minutes: 10
+      run: |
         echo "Building frontend..."
         yarn build
-        echo "Frontend build complete."
 
     - name: Run Backend Tests
       working-directory: ./backend
