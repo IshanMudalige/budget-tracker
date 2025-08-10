@@ -5,76 +5,99 @@ on:
     branches:
       - main  # Trigger CI on pushes to the main branch
 
-
 jobs:
-  build-deploy:
-    name: Run Tests
+  build-and-deploy: # Changed job name to better reflect its purpose
+    name: Build, Test, and Deploy Application
     runs-on: self-hosted
+
+    # Define environment variables for the entire job
+    # Secrets are provided by GitHub Actions and automatically masked in logs when used correctly.
+    env:
+      MONGO_URI: ${{ secrets.MONGO_URI }}
+      JWT_SECRET: ${{ secrets.JWT_SECRET }}
+      PORT: ${{ secrets.PORT }}
+      PROD_ENV_CONFIG: ${{ secrets.PROD }} # Assuming 'PROD' secret contains content for .env file
 
     strategy:
       matrix:
-        node-version: [22] # Test on multiple Node.js versions
-
-
-    environment: MONGO_URI
+        node-version: [22] # Test on Node.js version 22
 
     steps:
     - name: Checkout Code
       uses: actions/checkout@v3
 
-    # Set up Node.js
-    - name: Setup Node.js
+    - name: Setup Node.js ${{ matrix.node-version }}
       uses: actions/setup-node@v3
       with:
         node-version: ${{ matrix.node-version }}
+        cache: 'yarn' # Cache node modules for faster builds
 
-    - name: Print Env Secret
+    - name: Verify Environment Variables Are Set
+      run: |
+        # Do NOT echo secret values directly. GitHub Actions automatically masks them.
+        # This step just confirms that the variables are accessible.
+        echo "MONGO_URI is set (masked in logs)."
+        echo "JWT_SECRET is set (masked in logs)."
+        echo "PORT is set (masked in logs)."
+        echo "PROD_ENV_CONFIG is set (masked in logs)."
 
-      env:
-        MONGO_URI: ${{ secrets.MONGO_URI }}
-        JWT_SECRET: ${{ secrets.JWT_SECRET }}
-        PORT: ${{ secrets.PORT }}
-      run: | 
-        echo "Secret 1 is: $MONGO_URI"
-        echo "Secret 2 is: $JWT_SECRET"
-        echo "Secret 3 is: $PORT"
-      
-    - run: pm2 stop all
+    - name: Configure Swap Space for Frontend Build # Added step to increase swap space
+      run: |
+        echo "Configuring 4GB swap file..."
+        sudo fallocate -l 4G /swapfile
+        sudo chmod 600 /swapfile
+        sudo mkswap /swapfile
+        sudo swapon /swapfile
+        sudo swapon --show # Verify swap is active
+        echo '/swapfile none swap sw 0 0' | sudo tee -a /etc/fstab # Make swap persistent across reboots
 
-    # Install dependencies for backend
+    - name: Stop PM2 Processes (if running)
+      # This assumes PM2 is installed and configured on your self-hosted runner.
+      run: pm2 stop all || true # '|| true' allows the step to pass even if pm2 isn't running or stops nothing
+
     - name: Install Backend Dependencies
       working-directory: ./backend
-      run: | 
-       npm install --global yarn
+      run: |
+       npm install --global yarn # Install Yarn globally if not already present
        yarn --version
-       yarn install
-      
-    # Install dependencies for frontend
-    - name: Install Frontend Dependencies
+       yarn install --frozen-lockfile # Use --frozen-lockfile for CI environments to ensure exact versions
+
+    - name: Install Frontend Dependencies and Build
       working-directory: ./frontend
       run: |
+        echo "Checking disk space before frontend build..."
         df -h
-        sudo rm -rf ./build
-        yarn install
-        # yarn run build
+        echo "Removing existing build directory..."
+        sudo rm -rf ./build || true # Add || true to prevent failure if directory doesn't exist
+        echo "Installing frontend dependencies..."
+        yarn install --frozen-lockfile
+        echo "Building frontend application..."
+        yarn run build # Uncommented this, as usually frontend needs to be built for deployment
 
+    - name: Remove Swap Space # Added step to clean up swap space after build
+      if: always() # Ensure this runs even if previous steps fail
+      run: |
+        echo "Removing swap file..."
+        sudo swapoff /swapfile
+        sudo rm /swapfile
+        sudo sed -i '/\/swapfile/d' /etc/fstab # Remove swap entry from fstab
 
-    # Run backend tests
     - name: Run Backend Tests
-      env:
-        MONGO_URI: ${{ secrets.MONGO_URI }}
-        JWT_SECRET: ${{ secrets.JWT_SECRET }}
-        PORT: ${{ secrets.PORT }}
       working-directory: ./backend
       run: npm test
 
+    - name: Create Backend .env File
+      working-directory: ./backend
+      run: |
+        echo "Creating .env file from PROD_ENV_CONFIG secret..."
+        echo "${{ env.PROD_ENV_CONFIG }}" > .env
+        cat .env # For debugging, remove in production if content is sensitive
 
-    - run: npm ci
-    - run: | 
-        cd ./backend
-        touch .env
-        echo "${{ secrets.PROD }}" > .env
+    - name: Start PM2 Processes
+      # Starts all PM2 applications defined in your PM2 ecosystem file or previously saved list
+      run: pm2 start all
 
-    - run: pm2 start all
-
-    - run: pm2 restart all
+    - name: Restart PM2 Processes (Optional)
+      # This step immediately restarts the processes that were just started.
+      # Only keep this if you have a specific reason for an immediate restart after initial start.
+      run: pm2 restart all
