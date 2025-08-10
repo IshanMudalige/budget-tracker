@@ -1,13 +1,13 @@
-name: MERN App CI/CD (Self-Hosted Runner)
+name: Budget Tracker Pipeline
 
 on:
   push:
     branches:
-      - main  # Trigger only on pushes to main branch
+      - main
 
 jobs:
-  deploy:
-    name: Build & Deploy to EC2 (Self-Hosted)
+  build-and-deploy:
+    name: Build & Deploy on Self-Hosted Runner
     runs-on: self-hosted
 
     strategy:
@@ -15,91 +15,71 @@ jobs:
         node-version: [22]
 
     steps:
-    - name: Checkout Code
-      uses: actions/checkout@v3
+      # -------------------- Checkout --------------------
+      - name: Checkout Repository
+        uses: actions/checkout@v3
 
-    - name: Setup Node.js ${{ matrix.node-version }}
-      uses: actions/setup-node@v3
-      with:
-        node-version: ${{ matrix.node-version }}
+      # -------------------- Setup Node --------------------
+      - name: Setup Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v3
+        with:
+          node-version: ${{ matrix.node-version }}
+          cache: yarn
 
-    - name: Print Environment Variables
-      env:
-        MONGO_URI: ${{ secrets.MONGO_URI }}
-        JWT_SECRET: ${{ secrets.JWT_SECRET }}
-        PORT: ${{ secrets.PORT }}
-      run: |
-        echo "Using Mongo URI: $MONGO_URI"
-        echo "JWT Secret is set"
-        echo "Port: $PORT"
+      # -------------------- Clean old deps --------------------
+      - name: Clean old dependencies
+        run: |
+          echo "Cleaning old node_modules..."
+          rm -rf frontend/node_modules backend/node_modules
+          yarn cache clean
 
-    - name: Stop Existing PM2 Apps (if any)
-      run: |
-        pm2 list || echo "PM2 not installed yet"
-        pm2 delete all || echo "No PM2 processes to delete"
+      # -------------------- Stop running apps --------------------
+      - name: Stop running apps (PM2)
+        run: pm2 stop all || true
 
-    - name: Cache Backend Dependencies
-      uses: actions/cache@v3
-      with:
-        path: backend/node_modules
-        key: backend-${{ hashFiles('backend/yarn.lock') }}
-        restore-keys: |
-          backend-
+      # -------------------- Install Backend --------------------
+      - name: Install Backend Dependencies
+        working-directory: ./backend
+        run: |
+          echo "Installing backend deps..."
+          yarn install --frozen-lockfile
+          yarn list || true
 
-    - name: Install Backend Dependencies
-      working-directory: ./backend
-      run: |
-        echo "Installing backend dependencies..."
-        yarn install --frozen-lockfile
-        echo "Backend dependencies installed."
+      # -------------------- Install Frontend --------------------
+      - name: Install Frontend Dependencies
+        working-directory: ./frontend
+        run: |
+          echo "Installing frontend deps..."
+          yarn install --frozen-lockfile
+          yarn list react-scripts || echo "⚠️ react-scripts missing!"
 
-    - name: Cache Frontend Dependencies
-      uses: actions/cache@v3
-      with:
-        path: frontend/node_modules
-        key: frontend-${{ hashFiles('frontend/yarn.lock') }}
-        restore-keys: |
-          frontend-
+      # -------------------- Build Frontend --------------------
+      - name: Build Frontend
+        working-directory: ./frontend
+        run: |
+          npx react-scripts --version || echo "⚠️ react-scripts still missing before build!"
+          yarn build
 
-    - name: Install Frontend Dependencies
-      working-directory: ./frontend
-      run: 
-        echo "Installing frontend dependencies..."
-        yarn install --frozen-lockfile
+      # -------------------- Run Backend Tests --------------------
+      - name: Run Backend Tests
+        working-directory: ./backend
+        env:
+          MONGO_URI: ${{ secrets.MONGO_URI }}
+          JWT_SECRET: ${{ secrets.JWT_SECRET }}
+          PORT: ${{ secrets.PORT }}
+        run: yarn test
 
-    - name: Build Frontend
-      working-directory: ./frontend
-      timeout-minutes: 10
-      run: |
-        echo "Building frontend..."
-        yarn build
+      # -------------------- Create Backend .env --------------------
+      - name: Create Backend .env
+        working-directory: ./backend
+        run: |
+          echo "Creating .env for backend..."
+          touch .env
+          echo "${{ secrets.PROD }}" > .env
 
-    - name: Run Backend Tests
-      working-directory: ./backend
-      env:
-        MONGO_URI: ${{ secrets.MONGO_URI }}
-        JWT_SECRET: ${{ secrets.JWT_SECRET }}
-        PORT: ${{ secrets.PORT }}
-      run: |
-        echo "Running backend tests..."
-        yarn test || echo "⚠ Tests failed but continuing"
-        echo "Tests finished."
-
-    - name: Create .env File for Backend
-      working-directory: ./backend
-      run: |
-        echo "${{ secrets.PROD }}" > .env
-        echo ".env file created."
-
-    - name: Start PM2 Processes
-      run: |
-        echo "Starting backend with PM2..."
-        cd ./backend
-        pm2 start server.js --name backend || echo "Backend start failed"
-        echo "Backend started."
-
-    - name: Restart PM2 Processes
-      run: |
-        echo "Restarting PM2 processes..."
-        pm2 restart all || echo "No processes to restart"
-        pm2 list
+      # -------------------- Start Apps --------------------
+      - name: Start Apps with PM2
+        run: |
+          pm2 start ./backend/index.js --name backend
+          pm2 restart all
+          pm2 save
