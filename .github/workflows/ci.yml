@@ -3,7 +3,7 @@ name: Budget Tracker Pipeline
 on:
   push:
     branches:
-      - main  # Trigger only on pushes to main branch
+      - main
 
 jobs:
   deploy:
@@ -53,6 +53,14 @@ jobs:
         echo "Building frontend..."
         yarn build
         echo "Frontend build complete."
+
+    - name: Deploy Frontend to Nginx
+      run: |
+        echo "Deploying frontend build to Nginx directory..."
+        sudo rm -rf /var/www/html/*
+        sudo cp -r ./frontend/build/* /var/www/html/
+        sudo systemctl restart nginx
+        echo "Frontend deployed to Nginx."
 
     - name: Run Backend Tests
       working-directory: ./backend
