@@ -97,7 +97,7 @@ const TrsForm = ({ selectedTransaction, setSelectedTx, refreshTransactions }) =>
     };
 
     return (
-        <form onSubmit={handleSubmit} className="bg-white w-full lg:w-1/2 p-6 rounded-xl shadow">
+        <form onSubmit={handleSubmit} className="bg-white w-full lg:w-1/2 p-6 rounded-xl shadow self-start">
             <h2 className="text-xl font-semibold mb-6">
                 {selectedTransaction ? "Update Transaction" : "Add Transaction"}
             </h2>

@@ -8,6 +8,7 @@ import IncomeExpense from './pages/IncomeExpense';
 import LandingPage from './pages/LandingPage';
 import Dashboard from './pages/Dashboard';
 import Reports from './pages/Reports';
+import Goals from './pages/Goals';
 
 function App() {
   return (
@@ -29,6 +30,7 @@ function App() {
             <Route path="/income-expense" element={<IncomeExpense />} />
             <Route path="/dashboard" element={<Dashboard />} />
             <Route path="/reports" element={<Reports />} />
+            <Route path="/goals" element={<Goals />} />
           </Route>
         </Routes>
       </Router>

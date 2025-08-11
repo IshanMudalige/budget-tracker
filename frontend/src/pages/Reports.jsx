@@ -73,7 +73,7 @@ const Reports = () => {
                 </div>
                 <div className="flex flex-col lg:flex-row justify-between gap-6">
                     {/* Left Form */}
-                    <div className="bg-white w-full lg:w-1/2 p-6 rounded-xl shadow">
+                    <div className="bg-white w-full lg:w-1/2 p-6 rounded-xl shadow self-start">
                         <div className="flex mb-6">
                              <button
                                 type="button"
@@ -99,7 +99,7 @@ const Reports = () => {
                         ) } 
                     </div>
 
-                    <div className="lg:w-1/2 space-y-6">
+                    <div className="lg:w-1/2 space-y-6 overflow-auto max-h-[500px]">
                         <TrsList transactions={transactions.filter(trx => trx.type === activeTab)} />
                     </div>
 

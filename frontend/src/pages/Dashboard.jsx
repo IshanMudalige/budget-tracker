@@ -6,6 +6,7 @@ import { useEffect } from 'react';
 import PieChartComponent from '../components/PieChartComponent';
 
 const Dashboard = () => {
+    const { user } = useAuth();
     const [selectedMonth] = useState(() => {
         const today = new Date();
         return {
@@ -13,8 +14,8 @@ const Dashboard = () => {
             label: "",
         };
     });
+    const [budget, setBudget] = useState(user?.budget || 2000);
     const [transactions, setTransactions] = useState([]);
-    const { user } = useAuth();
 
     const currentMonthName = new Date().toLocaleString("en-US", { month: "long" });
 
@@ -34,8 +35,9 @@ const Dashboard = () => {
     }, [selectedMonth.value, user.token]);
 
     useEffect(() => {
+        setBudget(user?.budget || 2000);
         fetchTransactions();
-    }, [fetchTransactions]);
+    }, [fetchTransactions, user?.budget]);
 
     // cal summary
     const totalIncome = transactions
@@ -48,8 +50,6 @@ const Dashboard = () => {
 
     const balance = totalIncome - totalExpense;
 
-    // budget data
-    const budget = 2000;
     const remaining = budget - totalExpense;
     const progress = Math.min(((totalExpense / budget) * 100).toFixed(0), 100);
 

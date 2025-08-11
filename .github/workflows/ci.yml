@@ -1,13 +1,13 @@
-name: MERN App CI/CD (Self-Hosted Runner)
+name: Budget Tracker Pipeline
 
 on:
   push:
     branches:
-      - main  # Trigger only on pushes to main branch
+      - main
 
 jobs:
   deploy:
-    name: Build & Deploy to EC2 (Self-Hosted)
+    name: Build & Deploy
     runs-on: self-hosted
 
     strategy:
@@ -33,48 +33,28 @@ jobs:
         echo "JWT Secret is set"
         echo "Port: $PORT"
 
-    - name: Stop Existing PM2 Apps (if any)
+    - name: Stop Existing PM2 Apps
       run: |
         pm2 list || echo "PM2 not installed yet"
         pm2 delete all || echo "No PM2 processes to delete"
 
-    - name: Cache Backend Dependencies
-      uses: actions/cache@v3
-      with:
-        path: backend/node_modules
-        key: backend-${{ hashFiles('backend/yarn.lock') }}
-        restore-keys: |
-          backend-
-
-    - name: Install Backend Dependencies
+    - name: Install BE dependencies
       working-directory: ./backend
       run: |
-        echo "Installing backend dependencies..."
+        echo "Installing FE dependencies"
         yarn install --frozen-lockfile
         echo "Backend dependencies installed."
 
-    - name: Cache Frontend Dependencies
-      uses: actions/cache@v3
-      with:
-        path: frontend/node_modules
-        key: frontend-${{ hashFiles('frontend/yarn.lock') }}
-        restore-keys: |
-          frontend-
-
-    - name: Install Frontend Dependencies
+    - name: Install FE Dependencies & Build
       working-directory: ./frontend
-      run: 
+      run: |
         echo "Installing frontend dependencies..."
         yarn install --frozen-lockfile
-
-    - name: Build Frontend
-      working-directory: ./frontend
-      timeout-minutes: 10
-      run: |
         echo "Building frontend..."
         yarn build
+        echo "Frontend build complete."
 
-    - name: Run Backend Tests
+    - name: Run BE Tests
       working-directory: ./backend
       env:
         MONGO_URI: ${{ secrets.MONGO_URI }}
@@ -82,7 +62,7 @@ jobs:
         PORT: ${{ secrets.PORT }}
       run: |
         echo "Running backend tests..."
-        yarn test || echo "⚠ Tests failed but continuing"
+        yarn test || echo "Tests failed but continuing"
         echo "Tests finished."
 
     - name: Create .env File for Backend
