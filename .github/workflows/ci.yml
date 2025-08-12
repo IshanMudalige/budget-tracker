@@ -15,6 +15,11 @@ jobs:
         node-version: [22]
 
     steps:
+    - name: Clean frontend build folder (fix permissions)
+      run: |
+        sudo chmod -R u+w ./frontend/build || true
+        sudo rm -rf ./frontend/build || true
+
     - name: Checkout Code
       uses: actions/checkout@v3
 
