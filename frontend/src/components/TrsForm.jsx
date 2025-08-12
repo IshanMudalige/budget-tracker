@@ -45,7 +45,7 @@ const TrsForm = ({ selectedTransaction, setSelectedTx, refreshTransactions }) =>
     }, [selectedTransaction]);
 
     const resetForm = () => {
-        setActiveTab("income");
+        setActiveTab("expense");
         setDate("");
         setCategory("");
         setNote("");
@@ -106,7 +106,7 @@ const TrsForm = ({ selectedTransaction, setSelectedTx, refreshTransactions }) =>
                     type={alert.type}
                     message={alert.message}
                     onClose={() => setAlert({ type: "", message: "" })}
-                    duration={3000} // Auto-hide after 3 seconds
+                    duration={3000}
                 />
             )}
             <div className="flex mb-6">

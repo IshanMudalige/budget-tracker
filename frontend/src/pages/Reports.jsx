@@ -58,7 +58,6 @@ const Reports = () => {
 
     return (
         <div>
-            {/* <Topbar onToggleSidebar={onToggleSidebar} /> */}
             <div className="px-6 py-6">
                 <h1 className="text-2xl font-semibold mb-4 text-gray-500">Reports</h1>
                 <div className='flex flex-col lg:flex-row justify-between gap-6 mb-8' >
@@ -72,7 +71,6 @@ const Reports = () => {
                     </div>
                 </div>
                 <div className="flex flex-col lg:flex-row justify-between gap-6">
-                    {/* Left Form */}
                     <div className="bg-white w-full lg:w-1/2 p-6 rounded-xl shadow self-start">
                         <div className="flex mb-6">
                              <button

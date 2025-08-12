@@ -29,7 +29,7 @@ const Register = () => {
             type={alert.type}
             message={alert.message}
             onClose={() => setAlert({ type: "", message: "" })}
-            duration={3000} // Auto-hide after 3 seconds
+            duration={3000}
           />
         )}
         <input
