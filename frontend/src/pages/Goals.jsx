@@ -20,7 +20,6 @@ const Goals = () => {
     const [spent, setSpent] = useState(0);
     const [isEditing, setIsEditing] = useState(false);
 
-    // Fetch the budget from API when page loads
     const [transactions, setTransactions] = useState([]);
 
     const fetchTransactions = useCallback(async () => {
@@ -98,7 +97,7 @@ const Goals = () => {
                             </div>
                         </div>
                         <h3 className="font-semibold mb-2 text-gray-600">Expense Breakdown</h3>
-                        <div className="space-y-4">
+                        <div className="space-y-4 overflow-auto max-h-[480px]">
                             {transactions.length === 0 && <p className="text-gray-400 flex items-center justify-center mt-36">No transactions found!</p>}
                             {transactions.filter(tx => tx.type === 'expense').map((tx) => {
                                 const { _id, date, amount, category } = tx;
