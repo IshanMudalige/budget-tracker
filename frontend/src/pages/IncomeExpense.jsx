@@ -48,7 +48,9 @@ const IncomeExpense = () => {
                             <MonthSelector selectedMonth={selectedMonth}
                                 setSelectedMonth={setSelectedMonth} />
                         </div>
+                        <div className="overflow-auto max-h-[500px]">
                         <TrsList transactions={transactions} setSelectedTx={setSelectedTx} selectedTx={selectedTx} refreshTransactions={fetchTransactions} />
+                    </div>
                     </div>
                 </div>
             </div>

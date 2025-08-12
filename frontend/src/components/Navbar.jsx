@@ -1,8 +1,8 @@
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
 
-const Navbar = () => {
+const Navbar = ({ onToggleSidebar }) => {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
     const [dropdownOpen, setDropdownOpen] = useState(false);
@@ -13,11 +13,26 @@ const Navbar = () => {
     navigate('/login');
   };
 
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (
+        dropdownRef.current &&
+        !dropdownRef.current.contains(event.target)
+      ) {
+        setDropdownOpen(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, []);
+
   return (
-    <nav className="p-4 flex justify-between items-center bg-white/80">
+    <nav className="sticky top-0 z-50 p-4 flex justify-between items-center bg-white/80 backdrop-blur">
       <Link to="/" className={`${user ? "hidden lg:block" : ""}`}><img src="/logo.png" alt="Logo" style={{ maxWidth: "80%" }} /></Link>
       {user ? (<button
-        // onClick={onToggleSidebar}
+        onClick={onToggleSidebar}
         className="lg:hidden text-xl"
         aria-label="Toggle Sidebar"
       >
@@ -25,7 +40,12 @@ const Navbar = () => {
       </button>) : null}
       <div>
         {user ? (
-          <div ref={dropdownRef} className="inline-block">
+          <div className='flex items-center'>
+          <Link to="/dashboard" className="flex items-center mr-4 px-4 py-2 hover:bg-gray-100">
+          <i className="fas fa-user-circle text-2xl mr-2" hidden></i>
+          <div>Dashboard</div>
+          </Link>
+          <div ref={dropdownRef} className="relative inline-block">
             <button
               onClick={() => setDropdownOpen((open) => !open)}
               className="flex items-center px-4 py-2 rounded hover:bg-gray-100"
@@ -44,13 +64,6 @@ const Navbar = () => {
             {dropdownOpen && (
               <div className="absolute right-0 mt-2 w-40 bg-white border rounded shadow-lg z-10">
                 <Link
-                  to="/dashboard"
-                  className="block px-4 py-2 hover:bg-gray-100"
-                  onClick={() => setDropdownOpen(false)}
-                >
-                  Dashboard
-                </Link>
-                <Link
                   to="/profile"
                   className="block px-4 py-2 hover:bg-gray-100"
                   onClick={() => setDropdownOpen(false)}
@@ -65,6 +78,7 @@ const Navbar = () => {
                 </button>
               </div>
             )}
+          </div>
           </div>
         ) : (
           <>

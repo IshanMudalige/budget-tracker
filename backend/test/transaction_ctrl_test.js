@@ -51,10 +51,8 @@ describe('Add Transaction Function Test', () => {
 
     await createTransaction(req, res);
 
-    // Check save() was called once
-    expect(saveStub.calledOnce).to.be.true;
 
-    // Check response
+    expect(saveStub.calledOnce).to.be.true;
     expect(res.status.calledWith(201)).to.be.true;
     expect(res.json.calledWith(createdTrs)).to.be.true;
   });
@@ -86,225 +84,218 @@ describe('Add Transaction Function Test', () => {
 });
 
 
+describe('updateTransaction Function Test', () => {
+  let findByIdStub, saveStub;
 
-// describe('Update Function Test', () => {
+  afterEach(() => {
+    if (findByIdStub && findByIdStub.restore) findByIdStub.restore();
+    if (saveStub && saveStub.restore) saveStub.restore();
+  });
 
-//   it('should update task successfully', async () => {
-//     // Mock task data
-//     const taskId = new mongoose.Types.ObjectId();
-//     const existingTask = {
-//       _id: taskId,
-//       title: "Old Task",
-//       description: "Old Description",
-//       completed: false,
-//       deadline: new Date(),
-//       save: sinon.stub().resolvesThis(), // Mock save method
-//     };
-//     // Stub Task.findById to return mock task
-//     const findByIdStub = sinon.stub(Task, 'findById').resolves(existingTask);
+  it('should update a transaction successfully', async () => {
+    const transactionId = new mongoose.Types.ObjectId();
+    const req = {
+      params: { id: transactionId },
+      body: {
+        amount: 200,
+        type: 'income',
+        category: new mongoose.Types.ObjectId(),
+        note: 'updated note',
+        date: '2025-08-10',
+      },
+    };
 
-//     // Mock request & response
-//     const req = {
-//       params: { id: taskId },
-//       body: { title: "New Task", completed: true }
-//     };
-//     const res = {
-//       json: sinon.spy(),
-//       status: sinon.stub().returnsThis()
-//     };
+    const existingTransaction = new Transaction({
+      _id: transactionId,
+      amount: 100,
+      type: 'expense',
+      category: new mongoose.Types.ObjectId(),
+      note: 'old note',
+      date: '2025-08-05',
+    });
 
-//     // Call function
-//     await updateTask(req, res);
+    findByIdStub = sinon.stub(Transaction, 'findById').resolves(existingTransaction);
+    saveStub = sinon.stub(existingTransaction, 'save').resolves(existingTransaction);
 
-//     // Assertions
-//     expect(existingTask.title).to.equal("New Task");
-//     expect(existingTask.completed).to.equal(true);
-//     expect(res.status.called).to.be.false; // No error status should be set
-//     expect(res.json.calledOnce).to.be.true;
+    const res = {
+      json: sinon.spy(),
+      status: sinon.stub().returnsThis(),
+    };
 
-//     // Restore stubbed methods
-//     findByIdStub.restore();
-//   });
+    await updateTransaction(req, res);
 
+    expect(findByIdStub.calledOnceWith(transactionId)).to.be.true;
+    expect(existingTransaction.amount).to.equal(200);
+    expect(existingTransaction.type).to.equal('income');
+    expect(existingTransaction.note).to.equal('updated note');
+    expect(saveStub.calledOnce).to.be.true;
+    expect(res.json.calledWith(existingTransaction)).to.be.true;
+  });
 
+  it('should return 404 if transaction not found', async () => {
+    const transactionId = new mongoose.Types.ObjectId();
+    const req = {
+      params: { id: transactionId },
+      body: {
+        amount: 200,
+        type: 'income',
+        category: new mongoose.Types.ObjectId(),
+        note: 'updated note',
+        date: '2025-08-10',
+      },
+    };
 
-//   it('should return 404 if task is not found', async () => {
-//     const findByIdStub = sinon.stub(Task, 'findById').resolves(null);
+    findByIdStub = sinon.stub(Transaction, 'findById').resolves(null);
 
-//     const req = { params: { id: new mongoose.Types.ObjectId() }, body: {} };
-//     const res = {
-//       status: sinon.stub().returnsThis(),
-//       json: sinon.spy()
-//     };
+    const res = {
+      json: sinon.spy(),
+      status: sinon.stub().returnsThis(),
+    };
 
-//     await updateTask(req, res);
+    await updateTransaction(req, res);
 
-//     expect(res.status.calledWith(404)).to.be.true;
-//     expect(res.json.calledWith({ message: 'Task not found' })).to.be.true;
+    expect(res.status.calledWith(404)).to.be.true;
+    expect(res.json.calledWith({ error: 'Transaction not found' })).to.be.true;
+  });
 
-//     findByIdStub.restore();
-//   });
+  it('should return 400 if error occurs during update', async () => {
+    const transactionId = new mongoose.Types.ObjectId();
+    const req = {
+      params: { id: transactionId },
+      body: {
+        amount: 200,
+        type: 'income',
+        category: new mongoose.Types.ObjectId(),
+        note: 'updated note',
+        date: '2025-08-10',
+      },
+    };
 
-//   it('should return 500 on error', async () => {
-//     const findByIdStub = sinon.stub(Task, 'findById').throws(new Error('DB Error'));
+    const existingTransaction = new Transaction({
+      _id: transactionId,
+      amount: 100,
+      type: 'expense',
+      category: new mongoose.Types.ObjectId(),
+      note: 'old note',
+      date: '2025-08-05',
+    });
 
-//     const req = { params: { id: new mongoose.Types.ObjectId() }, body: {} };
-//     const res = {
-//       status: sinon.stub().returnsThis(),
-//       json: sinon.spy()
-//     };
+    findByIdStub = sinon.stub(Transaction, 'findById').resolves(existingTransaction);
+    saveStub = sinon.stub(existingTransaction, 'save').throws(new Error('DB Error'));
 
-//     await updateTask(req, res);
+    const res = {
+      json: sinon.spy(),
+      status: sinon.stub().returnsThis(),
+    };
 
-//     expect(res.status.calledWith(500)).to.be.true;
-//     expect(res.json.called).to.be.true;
+    await updateTransaction(req, res);
 
-//     findByIdStub.restore();
-//   });
+    expect(res.status.calledWith(400)).to.be.true;
+    expect(res.json.calledWith({ error: 'Failed to update transaction' })).to.be.true;
+  });
+});
 
+describe('deleteTransaction Function Test', () => {
+  let findByIdStub, removeStub;
 
+  afterEach(() => {
+    if (findByIdStub && findByIdStub.restore) findByIdStub.restore();
+    if (removeStub && removeStub.restore) removeStub.restore();
+  });
 
-// });
+  it('should delete a transaction successfully', async () => {
+    const transactionId = new mongoose.Types.ObjectId();
 
+    const transaction = new Transaction({
+      _id: transactionId,
+      amount: 100,
+      user: new mongoose.Types.ObjectId(),
+    });
 
+    removeStub = sinon.stub(transaction, 'remove').resolves();
+    findByIdStub = sinon.stub(Transaction, 'findById').resolves(transaction);
 
-// describe('GetTask Function Test', () => {
+    const res = {
+      json: sinon.spy(),
+      status: sinon.stub().returnsThis(),
+    };
 
-//   it('should return tasks for the given user', async () => {
-//     // Mock user ID
-//     const userId = new mongoose.Types.ObjectId();
+    await deleteTransaction({ params: { id: transactionId } }, res);
 
-//     // Mock task data
-//     const tasks = [
-//       { _id: new mongoose.Types.ObjectId(), title: "Task 1", userId },
-//       { _id: new mongoose.Types.ObjectId(), title: "Task 2", userId }
-//     ];
+    expect(findByIdStub.calledOnceWith(transactionId)).to.be.true;
+    expect(removeStub.calledOnce).to.be.true;
+    expect(res.json.calledWith({ message: 'Transaction deleted' })).to.be.true;
+  });
 
-//     // Stub Task.find to return mock tasks
-//     const findStub = sinon.stub(Task, 'find').resolves(tasks);
+  it('should return 404 if transaction not found', async () => {
+    const transactionId = new mongoose.Types.ObjectId();
 
-//     // Mock request & response
-//     const req = { user: { id: userId } };
-//     const res = {
-//       json: sinon.spy(),
-//       status: sinon.stub().returnsThis()
-//     };
+    findByIdStub = sinon.stub(Transaction, 'findById').resolves(null);
 
-//     // Call function
-//     await getTasks(req, res);
+    const res = {
+      json: sinon.spy(),
+      status: sinon.stub().returnsThis(),
+    };
 
-//     // Assertions
-//     expect(findStub.calledOnceWith({ userId })).to.be.true;
-//     expect(res.json.calledWith(tasks)).to.be.true;
-//     expect(res.status.called).to.be.false; // No error status should be set
+    await deleteTransaction({ params: { id: transactionId } }, res);
 
-//     // Restore stubbed methods
-//     findStub.restore();
-//   });
+    expect(res.status.calledWith(404)).to.be.true;
+    expect(res.json.calledWith({ error: 'Transaction not found' })).to.be.true;
+  });
 
-//   it('should return 500 on error', async () => {
-//     // Stub Task.find to throw an error
-//     const findStub = sinon.stub(Task, 'find').throws(new Error('DB Error'));
+  it('should return 400 if error occurs during delete', async () => {
+    const transactionId = new mongoose.Types.ObjectId();
 
-//     // Mock request & response
-//     const req = { user: { id: new mongoose.Types.ObjectId() } };
-//     const res = {
-//       json: sinon.spy(),
-//       status: sinon.stub().returnsThis()
-//     };
+    const transaction = new Transaction({
+      _id: transactionId,
+      amount: 100,
+      user: new mongoose.Types.ObjectId(),
+    });
 
-//     // Call function
-//     await getTasks(req, res);
+    removeStub = sinon.stub(transaction, 'remove').throws(new Error('DB Error'));
+    findByIdStub = sinon.stub(Transaction, 'findById').resolves(transaction);
 
-//     // Assertions
-//     expect(res.status.calledWith(500)).to.be.true;
-//     expect(res.json.calledWithMatch({ message: 'DB Error' })).to.be.true;
+    const res = {
+      json: sinon.spy(),
+      status: sinon.stub().returnsThis(),
+    };
 
-//     // Restore stubbed methods
-//     findStub.restore();
-//   });
+    await deleteTransaction({ params: { id: transactionId } }, res);
 
-// });
+    expect(res.status.calledWith(400)).to.be.true;
+    expect(res.json.calledWith({ error: 'Failed to delete transaction' })).to.be.true;
+  });
+});
 
+describe('getTransactions Function Test', () => {
+  let findStub;
 
+  afterEach(() => {
+    if (findStub && findStub.restore) findStub.restore();
+  });
 
-// describe('DeleteTask Function Test', () => {
+  it('should fetch transactions successfully', async () => {
+    const req = {
+      user: { _id: new mongoose.Types.ObjectId() },
+      query: { month: '8', year: '2025' },
+    };
 
-//   it('should delete a task successfully', async () => {
-//     // Mock request data
-//     const req = { params: { id: new mongoose.Types.ObjectId().toString() } };
+    const fakeTransactions = [
+      { _id: new mongoose.Types.ObjectId(), amount: 100, user: req.user._id },
+    ];
 
-//     // Mock task found in the database
-//     const task = { remove: sinon.stub().resolves() };
+    findStub = sinon.stub(Transaction, 'find').returns({
+      populate: sinon.stub().resolves(fakeTransactions),
+    });
 
-//     // Stub Task.findById to return the mock task
-//     const findByIdStub = sinon.stub(Task, 'findById').resolves(task);
+    const res = {
+      json: sinon.spy(),
+      status: sinon.stub().returnsThis(),
+    };
 
-//     // Mock response object
-//     const res = {
-//       status: sinon.stub().returnsThis(),
-//       json: sinon.spy()
-//     };
+    await getTransactions(req, res);
 
-//     // Call function
-//     await deleteTask(req, res);
-
-//     // Assertions
-//     expect(findByIdStub.calledOnceWith(req.params.id)).to.be.true;
-//     expect(task.remove.calledOnce).to.be.true;
-//     expect(res.json.calledWith({ message: 'Task deleted' })).to.be.true;
-
-//     // Restore stubbed methods
-//     findByIdStub.restore();
-//   });
-
-//   it('should return 404 if task is not found', async () => {
-//     // Stub Task.findById to return null
-//     const findByIdStub = sinon.stub(Task, 'findById').resolves(null);
-
-//     // Mock request data
-//     const req = { params: { id: new mongoose.Types.ObjectId().toString() } };
-
-//     // Mock response object
-//     const res = {
-//       status: sinon.stub().returnsThis(),
-//       json: sinon.spy()
-//     };
-
-//     // Call function
-//     await deleteTask(req, res);
-
-//     // Assertions
-//     expect(findByIdStub.calledOnceWith(req.params.id)).to.be.true;
-//     expect(res.status.calledWith(404)).to.be.true;
-//     expect(res.json.calledWith({ message: 'Task not found' })).to.be.true;
-
-//     // Restore stubbed methods
-//     findByIdStub.restore();
-//   });
-
-//   it('should return 500 if an error occurs', async () => {
-//     // Stub Task.findById to throw an error
-//     const findByIdStub = sinon.stub(Task, 'findById').throws(new Error('DB Error'));
-
-//     // Mock request data
-//     const req = { params: { id: new mongoose.Types.ObjectId().toString() } };
-
-//     // Mock response object
-//     const res = {
-//       status: sinon.stub().returnsThis(),
-//       json: sinon.spy()
-//     };
-
-//     // Call function
-//     await deleteTask(req, res);
-
-//     // Assertions
-//     expect(res.status.calledWith(500)).to.be.true;
-//     expect(res.json.calledWithMatch({ message: 'DB Error' })).to.be.true;
-
-//     // Restore stubbed methods
-//     findByIdStub.restore();
-//   });
-
-// });
+    expect(findStub.calledOnce).to.be.true;
+    expect(res.json.calledWith(fakeTransactions)).to.be.true;
+  });
+});

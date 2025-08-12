@@ -33,19 +33,19 @@ jobs:
         echo "JWT Secret is set"
         echo "Port: $PORT"
 
-    - name: Stop Existing PM2 Apps (if any)
+    - name: Stop Existing PM2 Apps
       run: |
         pm2 list || echo "PM2 not installed yet"
         pm2 delete all || echo "No PM2 processes to delete"
 
-    - name: Install Backend Dependencies
+    - name: Install BE dependencies
       working-directory: ./backend
       run: |
-        echo "Installing backend dependencies..."
+        echo "Installing FE dependencies"
         yarn install --frozen-lockfile
         echo "Backend dependencies installed."
 
-    - name: Install Frontend Dependencies & Build
+    - name: Install FE Dependencies & Build
       working-directory: ./frontend
       run: |
         echo "Installing frontend dependencies..."
@@ -54,15 +54,7 @@ jobs:
         yarn build
         echo "Frontend build complete."
 
-    - name: Deploy Frontend to Nginx
-      run: |
-        echo "Deploying frontend build to Nginx directory..."
-        sudo rm -rf /var/www/html/*
-        sudo cp -r ./frontend/build/* /var/www/html/
-        sudo systemctl restart nginx
-        echo "Frontend deployed to Nginx."
-
-    - name: Run Backend Tests
+    - name: Run BE Tests
       working-directory: ./backend
       env:
         MONGO_URI: ${{ secrets.MONGO_URI }}

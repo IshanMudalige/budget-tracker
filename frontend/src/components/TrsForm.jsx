@@ -45,7 +45,7 @@ const TrsForm = ({ selectedTransaction, setSelectedTx, refreshTransactions }) =>
     }, [selectedTransaction]);
 
     const resetForm = () => {
-        setActiveTab("income");
+        setActiveTab("expense");
         setDate("");
         setCategory("");
         setNote("");
@@ -97,7 +97,7 @@ const TrsForm = ({ selectedTransaction, setSelectedTx, refreshTransactions }) =>
     };
 
     return (
-        <form onSubmit={handleSubmit} className="bg-white w-full lg:w-1/2 p-6 rounded-xl shadow">
+        <form onSubmit={handleSubmit} className="bg-white w-full lg:w-1/2 p-6 rounded-xl shadow self-start">
             <h2 className="text-xl font-semibold mb-6">
                 {selectedTransaction ? "Update Transaction" : "Add Transaction"}
             </h2>
@@ -106,7 +106,7 @@ const TrsForm = ({ selectedTransaction, setSelectedTx, refreshTransactions }) =>
                     type={alert.type}
                     message={alert.message}
                     onClose={() => setAlert({ type: "", message: "" })}
-                    duration={3000} // Auto-hide after 3 seconds
+                    duration={3000}
                 />
             )}
             <div className="flex mb-6">
