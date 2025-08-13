@@ -4,6 +4,8 @@
 **Name:** Aditha Ishan Mudalige  
 
 ---
+## 🌐 Jira Project
+URL: https://ifn-636.atlassian.net/jira/software/projects/BT/summary
 
 ## 📂 Project Setup Instructions
 
@@ -13,9 +15,9 @@
 ```bash
 npm run install-all
 ```
-### 1️⃣ Install Dependencies
+### 1️⃣ Run Project (FE & BE)
 ```bash
-npm run install-all
+npm run start
 ```
 
 ## 🌐 Project Live URL
