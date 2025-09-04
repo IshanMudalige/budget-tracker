@@ -88,3 +88,5 @@ jobs:
         echo "Restarting PM2 processes..."
         pm2 restart all || echo "No processes to restart"
         pm2 list
+
+# demo
