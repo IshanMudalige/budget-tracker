@@ -1,4 +1,4 @@
-import React, { useRef } from "react";
+import { useRef, useEffect } from "react";
 
 const months = [
   { label: "Jan", value: 1 },
@@ -17,6 +17,7 @@ const months = [
 
 const MonthSelector = ({ selectedMonth, setSelectedMonth }) => {
   const scrollRef = useRef(null);
+  const monthRefs = useRef({});
 
   const scrollLeft = () => {
     scrollRef.current.scrollBy({ left: -150, behavior: "smooth" });
@@ -25,6 +26,16 @@ const MonthSelector = ({ selectedMonth, setSelectedMonth }) => {
   const scrollRight = () => {
     scrollRef.current.scrollBy({ left: 150, behavior: "smooth" });
   };
+
+  useEffect(() => {
+    if (selectedMonth && monthRefs.current[selectedMonth.value]) {
+      monthRefs.current[selectedMonth.value].scrollIntoView({
+        behavior: "smooth",
+        inline: "center",
+        block: "nearest",
+      });
+    }
+  }, [selectedMonth]);
 
   return (
     <div className="relative w-full flex items-center">
@@ -42,11 +53,13 @@ const MonthSelector = ({ selectedMonth, setSelectedMonth }) => {
           {months.map((month) => (
             <button
               key={month.value}
+              ref={(el) => (monthRefs.current[month.value] = el)} // assign ref
               onClick={() => setSelectedMonth(month)}
-              className={`px-4 py-1 rounded-lg whitespace-nowrap ${selectedMonth?.value === month.value
+              className={`px-4 py-1 rounded-lg whitespace-nowrap ${
+                selectedMonth?.value === month.value
                   ? "bg-purple-500 text-white font-semibold shadow"
                   : "bg-gray-200 text-gray-600"
-                }`}
+              }`}
             >
               {month.label}
             </button>
