@@ -18,7 +18,7 @@ const TrsList = ({ transactions, setSelectedTx, selectedTx }) => {
                                     day: 'numeric',
                                     month: 'long',
                                     year: 'numeric',
-                                })}</span></p>
+                                })}</span>{tx.isRecurring && <span> <i className="fas fa-arrows-rotate fa-2xs"></i></span>}</p>
                                 <p className="text-xs text-gray-500 mt-1">{note}</p>
                             </div>
                         </div>
