@@ -110,4 +110,5 @@ module.exports = {
   createTransaction: withLog('createTransaction')(createTransaction),
   updateTransaction: withLog('updateTransaction')(updateTransaction),
   deleteTransaction: withLog('deleteTransaction')(deleteTransaction),
+  
 };
