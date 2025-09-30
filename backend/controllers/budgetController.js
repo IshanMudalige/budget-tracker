@@ -1,6 +1,41 @@
 // controllers/budgetController.js
 const BudgetFacade = require("../services/budgetFacade");
 
+const withLog = (name) => (handler) => async (req, res, next) => {
+  const t0 = Date.now();
+  const redact = (o) => {
+    try {
+      const c = JSON.parse(JSON.stringify(o || {}));
+      if (c.password) c.password = "[REDACTED]";
+      if (c.token) c.token = "[REDACTED]";
+      if (c.authorization) c.authorization = "[REDACTED]";
+      return c;
+    } catch { return {}; }
+  };
+
+  console.log(`[${new Date().toISOString()}] ${name}: START`, {
+    path: req.originalUrl,
+    method: req.method,
+    user: req.user?._id || req.user?.id,
+    params: req.params,
+    query: req.query,
+    body: redact(req.body),
+  });
+
+  try {
+    await handler(req, res, next);
+  } catch (err) {
+    console.error(`[${new Date().toISOString()}] ${name}: ERROR`, err.message);
+    return next ? next(err) : res.status(500).json({ success: false, error: err.message });
+  } finally {
+    const ms = Date.now() - t0;
+    console.log(`[${new Date().toISOString()}] ${name}: END`, {
+      status: res.statusCode,
+      duration_ms: ms,
+    });
+  }
+};
+
 
 exports.setBudget = async (req, res) => {
   try {
@@ -30,3 +65,8 @@ exports.getBudget = async (req, res) => {
   }
 };
  
+module.exports = {
+  setBudget: withLog("setBudget")(setBudget),
+  getRemaining: withLog("getRemaining")(getRemaining),
+  getBudget: withLog("getBudget")(getBudget),
+};

@@ -4,6 +4,8 @@ const router = express.Router();
 const { protect } = require('../middleware/authMiddleware');
 const budgetController = require("../controllers/budgetController");
 
+router.use(reqLogger);
+
 router.get("/remaining", protect, budgetController.getRemaining);
 router.get("/", protect, budgetController.getBudget);
 router.post("/set", protect, budgetController.setBudget);

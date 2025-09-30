@@ -13,5 +13,9 @@
     "mocha": "^11.0.1"
   },
   "author": "Task Manager Team",
-  "license": "ISC"
+  "license": "ISC",
+  "dependencies": {
+    "al": "^0.0.3",
+    "all": "^0.0.0"
+  }
 }
