@@ -67,6 +67,10 @@ const createTransaction = async (req, res) => {
     });
 
     const saved = await newTransaction.save();
+    // Wrap handler with logging decorator (DECORATOR PATTERN)
+    const decoratedHandler = new LoggingDecorator(handler);
+
+    await decoratedHandler.process(newTransaction); // pass transaction as input
     res.status(201).json(saved);
   } catch (err) {
     res.status(400).json({ error: 'Failed to create transaction' });
