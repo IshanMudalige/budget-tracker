@@ -58,8 +58,8 @@ if (require.main === module) {
 
   // Notification managers (Observer + Strategy + Adapter)
   const wsManager = new NotificationManager(new WebSocketStrategy(new WebSocketAdapter(io)));
-  // const budgetSubject = BudgetFacade.getSubject();
-  // budgetSubject.subscribe(wsManager); TODO enable when facade done
+  const budgetSubject = BudgetFacade.getSubject();
+  budgetSubject.subscribe(wsManager);
 
   // const emailManager = new NotificationManager(new EmailStrategy(new EmailAdapter()));
   // budgetSubject.subscribe(emailManager);

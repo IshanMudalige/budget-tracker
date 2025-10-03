@@ -35,6 +35,10 @@ const createTransaction = async (req, res) => {
     });
 
     const saved = await newTransaction.save();
+
+    // Pass transaction to correct handler (FACTORY PATTERN)
+    const handler = HandlerFactory.createHandler(newTransaction, req.user._id);
+    
     res.status(201).json(saved);
   } catch (err) {
     res.status(400).json({ error: 'Failed to create transaction' });
