@@ -1,5 +1,37 @@
 const Transaction = require('../models/Transaction');
 
+const withLog = (name) => (handler) => async (req, res, next) => {
+  const t0 = Date.now();
+  const safe = (o = {}) => {
+    try {
+      const c = JSON.parse(JSON.stringify(o));
+      ['password','token','authorization'].forEach(k => { if (k in c) c[k] = '[REDACTED]'; });
+      return c;
+    } catch { return {}; }
+  };
+
+  console.log(`[${new Date().toISOString()}] ${name}: START`, {
+    path: req.originalUrl,
+    method: req.method,
+    user: req.user?._id || req.user?.id || 'anon',
+    params: req.params,
+    query: req.query,
+    body: safe(req.body),
+  });
+
+  try {
+    await handler(req, res, next);
+  } catch (err) {
+    console.error(`[${new Date().toISOString()}] ${name}: ERROR`, err.message);
+    return next ? next(err) : res.status(500).json({ error: err.message });
+  } finally {
+    console.log(`[${new Date().toISOString()}] ${name}: END`, {
+      status: res.statusCode,
+      duration_ms: Date.now() - t0,
+    });
+  }
+};
+
 const getTransactions = async (req, res) => {
   try {
     let { month, year } = req.query;
@@ -39,6 +71,10 @@ const createTransaction = async (req, res) => {
     // Pass transaction to correct handler (FACTORY PATTERN)
     const handler = HandlerFactory.createHandler(newTransaction, req.user._id);
     
+    // Wrap handler with logging decorator (DECORATOR PATTERN)
+    const decoratedHandler = new LoggingDecorator(handler);
+
+    await decoratedHandler.process(newTransaction); // pass transaction as input
     res.status(201).json(saved);
   } catch (err) {
     res.status(400).json({ error: 'Failed to create transaction' });
@@ -78,8 +114,9 @@ const deleteTransaction = async (req, res) => {
 };
 
 module.exports = {
-  getTransactions,
-  createTransaction,
-  updateTransaction,
-  deleteTransaction,
+  getTransactions: withLog('getTransactions')(getTransactions),
+  createTransaction: withLog('createTransaction')(createTransaction),
+  updateTransaction: withLog('updateTransaction')(updateTransaction),
+  deleteTransaction: withLog('deleteTransaction')(deleteTransaction),
+  
 };
