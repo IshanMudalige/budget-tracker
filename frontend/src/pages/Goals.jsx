@@ -5,7 +5,7 @@ import { useEffect } from 'react';
 import Alert from "../components/Alert";
 
 const Goals = () => {
-    const { user, setUser } = useAuth();
+    const { user } = useAuth();
 
     const [selectedMonth] = useState(() => {
         const today = new Date();
@@ -15,9 +15,8 @@ const Goals = () => {
         };
     });
     const [alert, setAlert] = useState({ type: "", message: "" });
-    const [budget, setBudget] = useState(user?.budget || 2000);
-    const [newBudget, setNewBudget] = useState(user?.budget || 2000);
-    const [spent, setSpent] = useState(0);
+    const [budget, setBudget] = useState();
+    const [newBudget, setNewBudget] = useState();
     const [isEditing, setIsEditing] = useState(false);
 
     const [transactions, setTransactions] = useState([]);
@@ -35,39 +34,41 @@ const Goals = () => {
             const totalSpent = res.data
                 .filter(tx => tx.type === 'expense')
                 .reduce((sum, tx) => sum + tx.amount, 0);
-            setSpent(totalSpent);
         } catch (error) {
             console.error('Error fetching transactions:', error);
         }
     }, [selectedMonth.value, user.token]);
 
-    useEffect(() => {
-        setBudget(user?.budget || 2000);
+    const fetchBudget = useCallback(async () => {
+        if (!user?.token) return;
+        try {
+            const res = await axiosInstance.get(`/api/budget`, {
+                headers: { Authorization: `Bearer ${user.token}` },
+            });
+            console.log('Fetched budget:', res.data);
+            setBudget(res.data);
+        } catch (error) {
+            console.error('Error fetching budget:', error);
+        }
+    }, [user.token]);
+
+    useEffect(() => {  
+        fetchBudget();
         fetchTransactions();
-    }, [fetchTransactions, user.budget]);
-
-
-    const remaining = budget - spent;
-    const progress = Math.min(((spent / budget) * 100).toFixed(0), 100);
+    }, [fetchTransactions, fetchBudget]);
 
     // budget update
     const updateBudget = async () => {
         try {
-            const res = await axiosInstance.put(
-                `/api/auth/updateBudget`,
-                { budget: newBudget },
+            const res = await axiosInstance.post(
+                `/api/budget/set`,
+                { amount: newBudget },
                 {
                     headers: { Authorization: `Bearer ${user.token}` },
                 }
             );
-            const updatedBudget = res.data.budget;
-            setBudget(updatedBudget);
+            setBudget(res.data);
             setIsEditing(false);
-            setUser((prev) => {
-                const updatedUser = { ...prev, budget: updatedBudget };
-                localStorage.setItem("user", JSON.stringify(updatedUser));
-                return updatedUser;
-            });
             setAlert({ type: "success", message: "Updated successfully!"});
         } catch (err) {
             setAlert({ type: "error", message: "Failed to update budget" });
@@ -76,7 +77,7 @@ const Goals = () => {
     };
 
     return (
-        <div>
+        budget ? (<div>
             <div className="px-6 py-6">
                 <h1 className="text-2xl font-semibold mb-4 text-gray-500">Budget Goal</h1>
                 <div className="flex flex-col lg:flex-row justify-between gap-6">
@@ -85,13 +86,13 @@ const Goals = () => {
                             <i class="fas fa-trophy fa-xl" style={{ color: "orange" }} />
                             <div className="w-full">
                                 <div className="flex justify-between items-center">
-                                    <p className="mb-2"><span className="font-semibold">${remaining.toFixed(2)}</span> remains of <span className="font-semibold">${budget.toFixed(2)}</span></p>
-                                    <span className="font-semibold font-medium text-gray-600 w-12 text-right">{progress}%</span>
+                                    <p className="mb-2"><span className="font-semibold">${(budget.limit-budget.used).toFixed(2)}</span> remains of <span className="font-semibold">${budget.limit.toFixed(2)}</span></p>
+                                    <span className="font-semibold font-medium text-gray-600 w-12 text-right">{Math.min(((budget.used / budget.limit) * 100).toFixed(0), 100)}%</span>
                                 </div>
                                 <div className="h-4 bg-gray-300 rounded-full overflow-hidden">
                                     <div
                                         className="h-full bg-purple-500"
-                                        style={{ width: `${progress}%` }}
+                                        style={{ width: `${ Math.min(((budget.used / budget.limit) * 100).toFixed(0), 100)}%` }}
                                     />
                                 </div>
                             </div>
@@ -102,7 +103,7 @@ const Goals = () => {
                             {transactions.filter(tx => tx.type === 'expense').map((tx) => {
                                 const { _id, date, amount, category } = tx;
 
-                                const percent = ((amount / budget) * 100).toFixed(1);
+                                const percent = ((amount / budget.limit) * 100).toFixed(1);
 
                                 return (
                                     <div key={_id} className={`flex justify-between items-center p-4 bg-white rounded-xl shadow`}>
@@ -161,7 +162,8 @@ const Goals = () => {
                                                 className="border rounded px-2 py-1 w-24 w-full text-center"
                                             />
                                         ) : (
-                                            <span className="font-semibold">${budget.toFixed(2)}</span>
+                                            // <div></div>
+                                            <span className="font-semibold">${budget.limit.toFixed(2)}</span>
                                         )}
                                     </p>
                                 </div>
@@ -196,7 +198,7 @@ const Goals = () => {
                     </div>
                 </div>
             </div>
-        </div>
+        </div>) : (<div className="flex items-center justify-center h-64">,Loading... </div>)
     );
 };
 
