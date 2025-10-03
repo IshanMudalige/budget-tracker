@@ -19,7 +19,8 @@
     "jsonwebtoken": "^8.5.1",
     "mongoose": "^6.0.14",
     "request": "^2.88.2",
-    "task-manager": "file:.."
+    "node-cron": "^4.2.1",
+    "socket.io": "^4.8.1"
   },
   "devDependencies": {
     "esm": "^3.2.25",

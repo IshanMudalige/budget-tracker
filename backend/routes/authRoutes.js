@@ -4,7 +4,7 @@ const { registerUser, loginUser, updateUserProfile, getProfile, updateBudget } =
 const { protect } = require('../middleware/authMiddleware');
 const router = express.Router();
 
-router.use(reqLogger);
+// router.use(reqLogger);
 
 router.post('/register', registerUser);
 router.post('/login', loginUser);
