@@ -31,9 +31,9 @@ const Goals = () => {
                 params: { month, year }
             });
             setTransactions(res.data);
-            const totalSpent = res.data
-                .filter(tx => tx.type === 'expense')
-                .reduce((sum, tx) => sum + tx.amount, 0);
+            // const totalSpent = res.data
+            //     .filter(tx => tx.type === 'expense')
+            //     .reduce((sum, tx) => sum + tx.amount, 0);
         } catch (error) {
             console.error('Error fetching transactions:', error);
         }
