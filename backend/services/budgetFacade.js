@@ -51,6 +51,17 @@ class BudgetFacade {
     return budget;
   }
 
+  static async setNewBudget(userId, amount) {
+    const budget = new Budget({
+      user: userId,
+      limit: amount,
+      used: 0
+    });
+
+    await budget.save();
+  return budget;
+}
+
   static getSubject() {
     return budgetSubject;
   }

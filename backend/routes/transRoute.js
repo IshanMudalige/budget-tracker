@@ -2,7 +2,7 @@ const express = require('express');
 const router = express.Router();
 const { protect } = require('../middleware/authMiddleware');
 const { getTransactions, createTransaction, updateTransaction, deleteTransaction } = require('../controllers/transController');
-router.use(reqLogger);
+// router.use(reqLogger);
 
 router.route('/')
 .get( protect, getTransactions)

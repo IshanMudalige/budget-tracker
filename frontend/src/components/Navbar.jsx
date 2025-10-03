@@ -1,6 +1,7 @@
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { useState, useRef, useEffect } from 'react';
+import Notifications from './Notifications';
 
 const Navbar = ({ onToggleSidebar }) => {
   const { user, logout } = useAuth();
@@ -45,6 +46,7 @@ const Navbar = ({ onToggleSidebar }) => {
           <i className="fas fa-user-circle text-2xl mr-2" hidden></i>
           <div>Dashboard</div>
           </Link>
+          <Notifications />
           <div ref={dropdownRef} className="relative inline-block">
             <button
               onClick={() => setDropdownOpen((open) => !open)}

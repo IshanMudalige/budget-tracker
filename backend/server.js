@@ -1,4 +1,7 @@
 
+const express = require('express');
+const dotenv = require('dotenv');
+const cors = require('cors');
 const http = require('http');
 const { Server } = require('socket.io');
 const connectDB = require('./config/db');
@@ -21,6 +24,7 @@ app.use(express.json());
 app.use('/api/auth', require('./routes/authRoutes'));
 app.use('/api/categories', require('./routes/catRoutes'));
 app.use('/api/transactions', require('./routes/transRoute'));
+app.use('/api/budget', require('./routes/budgetRoutes'));
 
 // Export the app object for testing
 if (require.main === module) {
