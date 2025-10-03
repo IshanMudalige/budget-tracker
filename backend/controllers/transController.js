@@ -1,4 +1,6 @@
 const Transaction = require('../models/Transaction');
+const HandlerFactory = require('../handlers/HandlerFactory');
+const LoggingDecorator = require("../decorators/loggingDecorator");
 
 const withLog = (name) => (handler) => async (req, res, next) => {
   const t0 = Date.now();
@@ -94,6 +96,9 @@ const updateTransaction = async (req, res) => {
     transaction.date = date;
     transaction.note = note;
     const updated = await transaction.save();
+    // Pass transaction to correct handler (FACTORY PATTERN)
+    const handler = HandlerFactory.createHandler(transaction, req.user._id);
+    handler.process(transaction);
     res.json(updated);
   } catch (err) {
     res.status(400).json({ error: 'Failed to update transaction' });
@@ -107,6 +112,8 @@ const deleteTransaction = async (req, res) => {
       return res.status(404).json({ error: 'Transaction not found' });
     }
     await transaction.remove();
+    const handler = HandlerFactory.createHandler(transaction, req.user._id);
+    handler.process(transaction);
     res.json({ message: 'Transaction deleted' });
   } catch (err) {
     res.status(400).json({ error: 'Failed to delete transaction' });
