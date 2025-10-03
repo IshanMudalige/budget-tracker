@@ -67,6 +67,10 @@ const createTransaction = async (req, res) => {
     });
 
     const saved = await newTransaction.save();
+
+    // Pass transaction to correct handler (FACTORY PATTERN)
+    const handler = HandlerFactory.createHandler(newTransaction, req.user._id);
+    
     // Wrap handler with logging decorator (DECORATOR PATTERN)
     const decoratedHandler = new LoggingDecorator(handler);
 
