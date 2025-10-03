@@ -44,7 +44,7 @@ class BudgetFacade {
   }
 
   static async getBudget(userId) {
-    const budget = await Budget.findOne({ userId });
+    const budget = await Budget.findOne({ user: userId });
     if (!budget) {
       throw new Error("Budget not found");
     }
