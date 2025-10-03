@@ -16,3 +16,4 @@ class HandlerFactory {
 }
 
 module.exports = HandlerFactory;
+
